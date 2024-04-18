@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://wwww.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+	<th th:fragment="column_link(fieldName, columLabel)"> 
+	    <a th:if="${sortField != 'Id'}" class="text-white"
+	       th:href="@{'/users/page/' + ${currentPage} + '?sortField='+${fieldName} +
+	       			'&amp;sortDir=' + ${sortField !=fieldName ? sorDir : reverseSortDir } +
+	       			${keyWord != null? '&amp;keyWord='+keyWord:''}}">
+	        [[${columLabel}]]
+	    </a>
+	    <span th:if="${sortField == 'Id'}"
+	          th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"></span> 
+	</th>
+</body>
+</html>
