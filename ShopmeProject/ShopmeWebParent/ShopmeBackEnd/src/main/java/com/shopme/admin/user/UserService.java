@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.shopme.admin.paging.PagingAndSortingHelper;
 import com.shopme.common.entity.Role;
 import com.shopme.common.entity.User;
 
@@ -29,39 +30,40 @@ public class UserService {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	public User getByEmail(String email) {
+		return userRepo.getUserByEmail(email);
+	}
+	
 	public List<User> listAll(){
-		return (List<User>)userRepo.findAll();
+		return (List<User>)userRepo.findAll(Sort.by("Id").ascending());
 	}
 	
 	public List<Role> listRoles(){
 		return (List<Role>)roleRepo.findAll();
 	}
 	
-	public Page<User> listByPage(int pageNum, String sortField, String sortDir, String ketWord){
-		Sort sort = Sort.by(sortField);
-		
-		sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
-		Pageable pageable = PageRequest.of(pageNum -1, USERS_PER_PAGE, sort);
-		
-		if(ketWord != null) {
-			return userRepo.findAll(ketWord,pageable);
-		}
-		return userRepo.findAll(pageable);
+	public void listByPage(int pageNum, PagingAndSortingHelper helper) {
+		helper.listEntities(pageNum, USERS_PER_PAGE, userRepo);
 	}
+	
 	public User save(User user) {
-		boolean isUpdatingUser = (user.getId()!=null);
-		if(isUpdatingUser) {
+		boolean isUpdatingUser = (user.getId() != null);
+		
+		if (isUpdatingUser) {
 			User existingUser = userRepo.findById(user.getId()).get();
-			if(user.getPassword().isEmpty()) {
+			
+			if (user.getPassword().isEmpty()) {
 				user.setPassword(existingUser.getPassword());
-			}else {
+			} else {
 				encodePassword(user);
 			}
+			
+		} else {		
+			encodePassword(user);
 		}
 		
-		
 		return userRepo.save(user);
-		
 	}
 	private void encodePassword(User user) {
 		String encodedPassword = passwordEncoder.encode(user.getPassword());
@@ -101,5 +103,23 @@ public class UserService {
 	}
 	public void updateUserEnableStatus(Integer id, boolean enabled) {
 		userRepo.updateEnableStatus(id, enabled);
+	}
+	
+	public User updateAccount(User userInForm) {
+		User userInDB = userRepo.findById(userInForm.getId()).get();
+		
+		if (!userInForm.getPassword().isEmpty()) {
+			userInDB.setPassword(userInForm.getPassword());
+			encodePassword(userInDB);
+		}
+		
+		if (userInForm.getPhotos() != null) {
+			userInDB.setPhotos(userInForm.getPhotos());
+		}
+		
+		userInDB.setFirstName(userInForm.getFirstName());
+		userInDB.setLastName(userInForm.getLastName());
+		
+		return userRepo.save(userInDB);
 	}
 }

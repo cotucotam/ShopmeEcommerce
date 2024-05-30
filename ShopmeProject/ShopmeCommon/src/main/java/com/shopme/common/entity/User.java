@@ -6,6 +6,7 @@ import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,11 +18,7 @@ import jakarta.persistence.Transient;
 
 @Entity
 @Table(name="users")
-public class User {
-	
-	@Id
-	@GeneratedValue(strategy= GenerationType.IDENTITY)
-	private Integer Id;
+public class User extends IdBasedEntity {
 	
 	@Column(length = 128, nullable = false, unique = true)
 	private String email;
@@ -40,7 +37,7 @@ public class User {
 	
 	private boolean enabled;
 	
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
 			name = "users_roles",
 			joinColumns = @JoinColumn(name = "user_id"),
@@ -112,24 +109,35 @@ public class User {
 		this.roles = roles;
 	}
 	
-	public Integer getId() {
-		return Id;
-	}
-	public void setId(Integer id) {
-		Id = id;
-	}
 	public void addRole(Role role) {
 		this.roles.add(role);
 	}
 	@Override
 	public String toString() {
-		return "User [Id=" + Id + ", email=" + email + ", firstName=" + firstName + ", lastName=" + lastName
+		return "User [Id=" + id + ", email=" + email + ", firstName=" + firstName + ", lastName=" + lastName
 				+ ", roles=" + roles + "]";
 	}
 	
 	@Transient
 	public String getPhotosImagePath() {
-		if(Id == null || photos == null) return "/images/default-user.png";
-		return "/user-photos/"+this.Id+"/"+this.photos;
+		if(id == null || photos == null) return "/images/default-user.png";
+		return "/user-photos/"+this.id+"/"+this.photos;
+	}
+	@Transient
+	public String getFullName() {
+		return firstName + " " + lastName;
+	}
+	
+	public boolean hasRole(String roleName) {
+		Iterator<Role> iterator = roles.iterator();
+		
+		while (iterator.hasNext()) {
+			Role role = iterator.next();
+			if (role.getName().equals(roleName)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

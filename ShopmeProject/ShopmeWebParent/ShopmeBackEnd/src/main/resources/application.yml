@@ -1,0 +1,24 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /ShopmeAdmin
+  ssl:    
+    enabled: true
+    key-alias: local_ssl
+    key-store: classpath:local-ssl.p12
+    key-store-type: PKCS12
+    key-password: 123456
+    key-store-password: 123456
+spring:
+  datasource:
+    password: 123456
+    url: jdbc:mysql://127.0.0.1:3307/cotam1
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    show-sql: false
